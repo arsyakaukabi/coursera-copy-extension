@@ -1,4 +1,8 @@
-# Coursera Copy Extension
+<p align="center">
+  <img src="icons/icon128.png" width="96" height="96" alt="Coursera Copy Extension logo">
+</p>
+
+<h1 align="center">Coursera Copy Extension</h1>
 
 Chrome extension that adds a one-click **copy to clipboard** button to Coursera, formatted clean and paste-ready for notes, AI prompts, or anywhere else.
 
@@ -127,6 +131,8 @@ The whole thing is three files, no build step:
 manifest.json    # MV3 manifest
 background.js    # Service worker — handles icon click & shortcut
 content.js       # Injected on coursera.org — floating button + extraction
+icon.svg         # Source logo (vector)
+icons/           # Rasterized icons (16/48/128) used by the extension
 ```
 
 To iterate: edit, then click the reload icon in `chrome://extensions/`. Refresh the Coursera tab.
