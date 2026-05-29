@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "Coursera Transcript Copier",
-  "version": "1.0.0",
-  "description": "Copy Coursera video transcript to clipboard in [title]\\n<transcript> format.",
+  "name": "Coursera Copy Extension",
+  "version": "1.1.0",
+  "description": "Copy Coursera transcripts, quizzes, readings, and video links to clipboard in [title]\\n<content> format.",
   "permissions": ["activeTab", "scripting"],
   "host_permissions": ["https://*.coursera.org/*"],
   "action": {
-    "default_title": "Copy Coursera Transcript (Ctrl+Shift+Y)"
+    "default_title": "Copy Coursera content (Ctrl+Shift+Y)"
   },
   "background": {
     "service_worker": "background.js"
@@ -24,7 +24,7 @@
         "default": "Ctrl+Shift+Y",
         "mac": "Command+Shift+Y"
       },
-      "description": "Copy current video transcript"
+      "description": "Copy current Coursera content"
     }
   }
 }
