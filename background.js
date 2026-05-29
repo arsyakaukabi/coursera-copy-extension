@@ -14,7 +14,7 @@ async function triggerCopy(tab) {
     try {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        files: ['content.js'],
+        files: ['extract.js', 'storage.js', 'drag.js', 'ui.js', 'content.js'],
       });
       resp = await chrome.tabs.sendMessage(tab.id, { type: 'COPY' });
     } catch (e2) {

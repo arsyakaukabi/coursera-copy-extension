@@ -30,13 +30,17 @@ Not on the Chrome Web Store. Install manually as an unpacked extension:
 
 Open any Coursera **video lecture**, **quiz**, **reading**, or **video plugin** page. There are three ways to copy:
 
-| Method                            | When                                                              |
-| --------------------------------- | ----------------------------------------------------------------- |
-| 📋 Floating button (bottom-right) | Always visible while on a transcript / quiz page                  |
-| Toolbar icon                      | Click the extension icon                                          |
-| Keyboard shortcut                 | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Y</kbd> (Mac: <kbd>⌘</kbd>) |
+| Method            | How                                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| Floating pill     | Click the **left half** (copy icon). Drag the pill anywhere by the **grip dots on the right** — its position is remembered. |
+| Toolbar icon      | Click the extension icon                                                                     |
+| Keyboard shortcut | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Y</kbd> (Mac: <kbd>⌘⇧Y</kbd>) — rebindable, see below   |
 
-A toast notification confirms success with the character count.
+The floating pill is icon-only; hover the copy half for a tooltip telling you what it'll copy (Transcript / Quiz / Reading / Video Link). On copy, the icon flashes ✓ / ✗ and a toast confirms with the character count.
+
+### Customizing the keyboard shortcut
+
+Chrome owns extension shortcuts. To change it: open `chrome://extensions/shortcuts`, find **Coursera Copy Extension**, and set your own combo. (Shortcuts only fire while a Coursera tab is focused.)
 
 ## Output format
 
@@ -88,6 +92,7 @@ https://www.youtube.com/watch?v=qIfWFFdumeo
 ## Permissions
 
 - `activeTab`, `scripting` — required to read the current Coursera page when you trigger a copy
+- `storage` — remembers where you dragged the floating button
 - Host permission `https://*.coursera.org/*` — limits the extension to Coursera only
 
 **No data leaves your browser.** No analytics, no external requests, no tracking.
@@ -102,7 +107,9 @@ Page type is auto-detected, then the matching extractor runs:
 - **Reading** → `[data-testid="cml-viewer"]` body text + external `<a>` links
 - **Plugin** → the YouTube video ID lives in a cross-origin iframe, so it's fetched from Coursera's `onDemandWidgetSessions.v1` API (`{userId}~{courseId}~{itemId}`). `userId`/`courseId` are parsed from the inline `window.App` JSON in the page; `itemId` comes from the URL.
 
-A `MutationObserver` watches for SPA navigation and re-injects the floating button when the page changes. The toolbar icon and keyboard shortcut message the content script (injecting it first if needed).
+A `MutationObserver` watches for SPA navigation and updates the floating button in place (tooltip + visibility) when the page changes. The toolbar icon and keyboard shortcut message the content script (injecting it first if needed).
+
+The dragged position is stored in `chrome.storage.local` and clamped to stay fully on-screen across reloads, resizes, and different displays. While dragging, a transparent full-screen overlay keeps pointer events from being swallowed by cross-origin iframes (like the YouTube embed).
 
 ## Known limitations
 
@@ -125,15 +132,21 @@ Selectors target Coursera's current DOM. If they redesign, things may break — 
 
 ## Development
 
-The whole thing is three files, no build step:
+No build step — plain files loaded straight as an unpacked extension. The content script is split into single-responsibility modules that share a `window.__crsr` namespace (loaded in this order):
 
 ```
 manifest.json    # MV3 manifest
-background.js    # Service worker — handles icon click & shortcut
-content.js       # Injected on coursera.org — floating button + extraction
+background.js    # Service worker — toolbar click & shortcut → messages the content script
+extract.js       # detectPageType + per-type extractors + clipboard  (window.__crsr.extract)
+storage.js       # button position load/save + viewport clamp        (window.__crsr.storage)
+drag.js          # makes an element draggable by a handle             (window.__crsr.drag)
+ui.js            # floating button + toast                            (window.__crsr.ui)
+content.js       # orchestrator — wires the above, MutationObserver, message listener
 icon.svg         # Source logo (vector)
 icons/           # Rasterized icons (16/48/128) used by the extension
 ```
+
+MV3 content scripts can't use `import`/`export`, so the modules attach to the shared `window.__crsr` global instead. Load order matters (each module reads the ones above it at definition time).
 
 To iterate: edit, then click the reload icon in `chrome://extensions/`. Refresh the Coursera tab.
 
